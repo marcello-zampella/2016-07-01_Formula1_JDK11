@@ -10,6 +10,7 @@ import java.util.List;
 
 import it.polito.tdp.formulaone.model.Circuit;
 import it.polito.tdp.formulaone.model.Constructor;
+import it.polito.tdp.formulaone.model.Risultato;
 import it.polito.tdp.formulaone.model.Season;
 
 
@@ -106,6 +107,59 @@ public class FormulaOneDAO {
 
 			conn.close();
 			return constructors;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Query Error");
+		}
+	}
+
+	public ArrayList<Integer> getAllYears() {
+		
+		String sql = "SELECT s.year " + 
+				"FROM seasons s ORDER BY year" ;
+		
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			
+			ResultSet rs = st.executeQuery() ;
+			
+			ArrayList<Integer> list = new ArrayList<Integer>() ;
+			while(rs.next()) {
+				list.add(rs.getInt("year"));
+			}
+			
+			conn.close();
+			return list ;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Query Error");
+		}
+	}
+
+	public ArrayList<Risultato> getAllResultsByYear(Integer anno) {
+		
+		String sql = "SELECT ra.raceId AS gara,re.driverId AS autista, re.position AS posizione " + 
+				"FROM seasons s, races ra, results re " + 
+				"WHERE s.year=? AND s.year=ra.year AND " + 
+				"ra.raceId=re.raceId AND re.position IS not NULL " +
+				"ORDER BY gara " ;
+		
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, anno);
+			ResultSet rs = st.executeQuery() ;
+			
+			ArrayList<Risultato> list = new ArrayList<Risultato>() ;
+			while(rs.next()) {
+				list.add(new Risultato(rs.getInt("gara"), rs.getInt("autista"), rs.getInt("posizione")));
+			}
+			
+			conn.close();
+			return list ;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new RuntimeException("SQL Query Error");
